@@ -95,21 +95,61 @@ x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
 x_train, x_test = x_train.reshape([-1, num_feacture]), x_test.reshape([-1, num_feacture])
 x_train, x_test = x_train /255. , x_test / 255.
 
-b= np.random.uniform(-1, 1, num_feacture*num_classes).reshape((num_classes, num_feacture))
-b0 = np.random.uniform(-1, 1, num_classes)
+#(1)
+# b= np.random.uniform(-1, 1, num_feacture*num_classes).reshape((num_classes, num_feacture))
+# b0 = np.random.uniform(-1, 1, num_classes)
 
+# for step in range(training_step):
+#     db = np.zeros((num_classes, num_feacture), dtype= 'float32')
+#     db0 = np.zeros(num_classes, dtype='float32')
+    
+#     for x, y in zip(x_train, y_train):
+#         yy = tf.one_hot(y, depth=num_classes).numpy()
+#         a= logistic_regression_multi(x, b, b0)
+#         db += np.matmul(np.expand_dims(yy-a, axis = 1), np.expand_dims(x, axis = 0))
+#         db0 += yy -a
+    
+#     b += learning_rate * db
+#     b0 += learning_rate * db0
+    
+# pred = np.argmax(np.array([logistic_regression_multi(x, b, b0) for x in x_test]), axis=1)
+# print("Accuracy: ", np.mean(pred == y_test))
+
+# TensorFlow 텐서로 변환
+x_train_tensor = tf.convert_to_tensor(x_train)
+y_train_tensor = tf.convert_to_tensor(y_train, dtype=tf.int32)
+x_test_tensor = tf.convert_to_tensor(x_test)
+y_test_tensor = tf.convert_to_tensor(y_test, dtype=tf.int32)
+
+# 경사 하강법 학습
 for step in range(training_step):
-    db = np.zeros((num_classes, num_feacture), dtype= 'float32')
-    db0 = np.zeros(num_classes, dtype='float32')
-    
-    for x, y in zip(x_train, y_train):
-        yy = tf.one_hot(y, depth=num_classes).numpy()
-        a= logistic_regression_multi(x, b, b0)
-        db += np.matmul(np.expand_dims(yy-a, axis = 1), np.expand_dims(x, axis = 0))
-        db0 += yy -a
-    
-    b += learning_rate * db
-    b0 += learning_rate * db0
-    
-pred = np.argmax(np.array([logistic_regression_multi(x, b, b0) for x in x_test]), axis=1)
-print("Accuracy: ", np.mean(pred == y_test))
+    # 배치 처리
+    for start in range(0, x_train.shape[0], batch_size):
+        end = min(start + batch_size, x_train.shape[0])
+        x_batch = x_train_tensor[start:end]
+        y_batch = y_train_tensor[start:end]
+
+        # 원핫 인코딩
+        yy = tf.one_hot(y_batch, depth=num_classes)
+
+        # 예측값 계산
+        a = logistic_regression_multi(x_batch, b, b0)
+
+        # 기울기 계산
+        db = tf.matmul(tf.transpose(yy - a), x_batch)
+        db0 = tf.reduce_sum(yy - a, axis=0)
+
+        # 파라미터 업데이트
+        b += learning_rate * db
+        b0 += learning_rate * db0
+
+    # 결과 출력 (Optional)
+    if step % display_step == 0:
+        pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
+        accuracy = np.mean(pred == y_test)
+        print(f"Step {step}, Accuracy: {accuracy:.4f}")
+
+# 최종 정확도 계산
+pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
+accuracy = np.mean(pred == y_test)
+print("Final Accuracy: ", accuracy)
