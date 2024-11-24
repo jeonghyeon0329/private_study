@@ -31,17 +31,27 @@ def filter_motion_data(pose_data, start_time, duration):
             filtered_data.append((timestamp, keypoints))
     return filtered_data
 
-# 3. 데이터셋 클래스 정의
+# # 3. 데이터셋 클래스 정의
+# class MotionDataset(Dataset):
+#     def __init__(self, motion_data):
+#         self.motion_data = motion_data
+    
+#     def __len__(self):
+#         return len(self.motion_data)
+    
+#     def __getitem__(self, idx):
+#         timestamp, keypoints = self.motion_data[idx]
+#         return torch.tensor(keypoints, dtype=torch.float32), 1  # 레이블을 1로 설정 (예시)
+
 class MotionDataset(Dataset):
     def __init__(self, motion_data):
-        self.motion_data = motion_data
-    
+        self.motion_data = [(torch.tensor(keypoints, dtype=torch.float32), 1) for _, keypoints in motion_data]
+      
     def __len__(self):
         return len(self.motion_data)
-    
+      
     def __getitem__(self, idx):
-        timestamp, keypoints = self.motion_data[idx]
-        return torch.tensor(keypoints, dtype=torch.float32), 1  # 레이블을 1로 설정 (예시)
+        return self.motion_data[idx]
 
 # 4. 모델 정의
 class SimpleNN(nn.Module):
