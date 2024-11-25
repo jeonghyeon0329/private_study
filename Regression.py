@@ -115,7 +115,7 @@ x_train, x_test = x_train /255. , x_test / 255.
 # pred = np.argmax(np.array([logistic_regression_multi(x, b, b0) for x in x_test]), axis=1)
 # print("Accuracy: ", np.mean(pred == y_test))
 
-# TensorFlow 텐서로 변환
+# TensorFlow 텐서로 변환(tensorflow-io-gcs-filesystem 0.31.0)
 x_train_tensor = tf.convert_to_tensor(x_train)
 y_train_tensor = tf.convert_to_tensor(y_train, dtype=tf.int32)
 x_test_tensor = tf.convert_to_tensor(x_test)
