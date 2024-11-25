@@ -19,7 +19,9 @@ mnist dataset:
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
 ##  이미지 데이터를 255로 나누어 0과 1 사이로 변환하는 것은 신경망 모델이 효과적으로 학습할 수 있도록 돕는 중요한 전처리 단계입니다.
-x_train, x_test = x_train / 255.0, x_test / 255.0
+# x_train, x_test = x_train / 255.0, x_test / 255.0
+x_train = np.expand_dims(x_train, -1)  # (60000, 28, 28, 1)
+x_test = np.expand_dims(x_test, -1)    # (10000, 28, 28, 1)
 
 # model = tf.keras.models.Sequential([
 #     tf.keras.layers.Flatten(input_shape = (28,28)), ## 2D 이미지를 1D 벡터로 변환
@@ -35,6 +37,8 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu'),
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
     tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'),  # 추가된 Conv 레이어
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation='relu'),
