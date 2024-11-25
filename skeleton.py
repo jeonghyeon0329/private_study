@@ -3,23 +3,23 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
+import requests
 
-# 1. 가상의 운동 데이터 생성 함수 (예: 팔굽혀펴기)
-def generate_synthetic_data(num_frames, movement_type='pushup'):
+# 1. API로 운동 데이터 가져오는 함수
+def fetch_motion_data_from_api(url='http://127.0.0.1:8080/pose_data', num_frames=100):
     pose_data = []
+    
     for timestamp in range(num_frames):
-        # 간단한 팔굽혀펴기 모션 시뮬레이션
-        if movement_type == 'pushup':
-            # 팔꿈치 높이가 시간에 따라 변하는 형태
-            elbow_y = 100 + 50 * np.sin(np.pi * timestamp / 30)  # 팔꿈치 Y 좌표 변화
-            shoulder_y = elbow_y + 50  # 어깨는 팔꿈치보다 높게 설정
-            wrist_y = elbow_y - 10  # 손목은 팔꿈치보다 조금 더 낮게 설정
-            keypoints = np.array([50, shoulder_y, 80, elbow_y, 110, wrist_y, 50, 150, 80, 200])  # x1, y1, ..., x5, y5
-        else:
-            keypoints = np.random.rand(10) * 200  # 기본적인 랜덤 데이터
+        response = requests.get(f'{url}?timestamp={timestamp}')
         
-        pose_data.append((timestamp * 0.1, keypoints))  # 0.1초 간격으로 타임스탬프 추가
-
+        if response.status_code == 200:
+            # Assuming the API returns JSON with keypoints (e.g., {'keypoints': [x1, y1, x2, y2, ...]})
+            data = response.json()
+            keypoints = np.array(data['keypoints'])  # example: [50, 100, 80, 120, ...]
+            pose_data.append((timestamp * 0.1, keypoints))  # Add timestamp (0.1 second intervals)
+        else:
+            print(f"Error fetching data at timestamp {timestamp}: {response.status_code}")
+    
     return pose_data
 
 # 2. 운동 구간 설정 함수
@@ -31,18 +31,7 @@ def filter_motion_data(pose_data, start_time, duration):
             filtered_data.append((timestamp, keypoints))
     return filtered_data
 
-# # 3. 데이터셋 클래스 정의
-# class MotionDataset(Dataset):
-#     def __init__(self, motion_data):
-#         self.motion_data = motion_data
-    
-#     def __len__(self):
-#         return len(self.motion_data)
-    
-#     def __getitem__(self, idx):
-#         timestamp, keypoints = self.motion_data[idx]
-#         return torch.tensor(keypoints, dtype=torch.float32), 1  # 레이블을 1로 설정 (예시)
-
+# 3. 데이터셋 클래스 정의
 class MotionDataset(Dataset):
     def __init__(self, motion_data):
         self.motion_data = [(torch.tensor(keypoints, dtype=torch.float32), 1) for _, keypoints in motion_data]
@@ -83,9 +72,9 @@ def train_model(model, dataset, num_epochs=100):
         
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}")
 
-# 6. 가상의 운동 데이터 생성 및 필터링
-num_frames = 100  # 100프레임 생성
-pose_data = generate_synthetic_data(num_frames, movement_type='pushup')
+# 6. API로 운동 데이터 가져오기 및 필터링
+num_frames = 100  # 100프레임 가져오기
+pose_data = fetch_motion_data_from_api(url='http://127.0.0.1:8080/pose_data', num_frames=num_frames)
 
 # 운동 구간 설정 (0초부터 10초까지)
 t = 0.0
