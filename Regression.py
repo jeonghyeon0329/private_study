@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # GPU 비활성화
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # GPU 비활성화
 
 def logistic_regression(X, b, b0):
     return 1. / (1. + np.exp(-np.dot(X, b) - b0))
@@ -20,14 +20,10 @@ def logistic_regression_wo_vectorization(x_test, b, b0):
     return pred
 
 ''' 단항 분리 0과 1만 분리 '''
-num_classes = 10 # 0~9까지 숫자
 num_feacture = 784 # 28* 28
 
-#Training parameters.
 learning_rate = 0.0001 ## 넘어가는 사이즈
 training_step = 50 ## 오차가 0이 되는 지점을 탐색하면 좋겠지만 불가능하기 떄문에 충분히 큰수로 지정
-batch_size = 256
-display_step = 50
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
@@ -38,7 +34,7 @@ x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
 y_train, y_test = np.array(y_train, np.float32), np.array(y_test, np.float32)
 
 x_train, x_test = x_train.reshape([-1, num_feacture]), x_test.reshape([-1, num_feacture])
-x_train, x_test = x_train / 255.0, x_test / 255.0
+x_train, x_test = x_train / 255.0, x_test / 255.0 ## 이미지 정규화(255가 검은색, 0이 흰색)
 
 b= np.random.uniform(-1, 1, num_feacture) ## 784개의 원소값을 가지는 벡터 생성
 b0 = np.random.uniform(-1, 1)
@@ -75,8 +71,11 @@ print("Accuracy: ", accuracy(pred, y_test))
 pred = np.vectorize(logistic_regression, signature='(n),(n),()->()')(x_test, b, b0)
 print("Accuracy: ", accuracy(pred, y_test))
 
+exit()
+
 ''' 다항 분리 '''
 
+'''
 def logistic_regression_multi(X, b, b0):
     return 1. / (1. + np.exp(-np.dot(b, X) - b0))
 
@@ -153,3 +152,5 @@ for step in range(training_step):
 pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
 accuracy = np.mean(pred == y_test)
 print("Final Accuracy: ", accuracy)
+
+'''
