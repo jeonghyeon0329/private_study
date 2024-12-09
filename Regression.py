@@ -25,10 +25,15 @@ num_feacture = 784 # 28* 28
 learning_rate = 0.0001 ## 넘어가는 사이즈
 training_step = 50 ## 오차가 0이 되는 지점을 탐색하면 좋겠지만 불가능하기 떄문에 충분히 큰수로 지정
 
+'''
+    6만개의 training, 1만개의 testing 
+    28pixel * 28pixel로 이미지 구성
+    grayscale : 0이면 가장 어두운 값, 255이면 가장 밝은 값
+'''
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
 x_train, y_train = map(list, zip(*[(x,y) for x, y in zip(x_train, y_train) if y ==0 or y== 1]))
-x_test, y_test = map(list, zip(*[[x,y] for x, y in zip(x_train, y_train) if y ==0 or y== 1]))
+x_test, y_test = map(list, zip(*[[x,y] for x, y in zip(x_test, y_test) if y ==0 or y== 1]))
 
 x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
 y_train, y_test = np.array(y_train, np.float32), np.array(y_test, np.float32)
@@ -45,13 +50,15 @@ for step in range(training_step):
     db0 = 0.
     for x, y in zip(x_train, y_train):
         a = logistic_regression(x, b, b0)
-        db += (y - a) * x  # 수정된 부분
+        db += (y - a) * x  # 수정된 부분        
         db0 += y - a
     b += learning_rate * db
     b0 += learning_rate * db0
 
-pred = logistic_regression_wo_vectorization(x_test, b, b0)
+pred = logistic_regression_wo_vectorization(x_test, b, b0) ## 반올림 했을때 1인지 0인지 구분
 print("Accuracy : ", accuracy(pred, y_test))
+exit()
+# 6-1
 
 # (2) : 벡터 변경
 for step in range(training_step):
@@ -77,73 +84,73 @@ print("Accuracy: ", accuracy(pred, y_test))
 num_classes = 10 # 0~9까지 숫자
 num_feacture = 784 # 28* 28
 
-#Training parameters.
+# Training parameters.
 learning_rate = 0.0001 ## 넘어가는 사이즈
 training_step = 50 ## 오차가 0이 되는 지점을 탐색하면 좋겠지만 불가능하기 떄문에 충분히 큰수로 지정
 batch_size = 256
 display_step = 50
 
-(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+# (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
-x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
-x_train, x_test = x_train.reshape([-1, num_feacture]), x_test.reshape([-1, num_feacture])
-x_train, x_test = x_train /255. , x_test / 255.
+# x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
+# x_train, x_test = x_train.reshape([-1, num_feacture]), x_test.reshape([-1, num_feacture])
+# x_train, x_test = x_train /255. , x_test / 255.
 
-#(1)
-b= np.random.uniform(-1, 1, num_feacture*num_classes).reshape((num_classes, num_feacture))
-b0 = np.random.uniform(-1, 1, num_classes)
+# #(1)
+# b= np.random.uniform(-1, 1, num_feacture*num_classes).reshape((num_classes, num_feacture))
+# b0 = np.random.uniform(-1, 1, num_classes)
 
-for step in range(training_step):
-    db = np.zeros((num_classes, num_feacture), dtype= 'float32')
-    db0 = np.zeros(num_classes, dtype='float32')
+# for step in range(training_step):
+#     db = np.zeros((num_classes, num_feacture), dtype= 'float32')
+#     db0 = np.zeros(num_classes, dtype='float32')
     
-    for x, y in zip(x_train, y_train):
-        yy = tf.one_hot(y, depth=num_classes).numpy()
-        a= logistic_regression_multi(x, b, b0)
-        db += np.matmul(np.expand_dims(yy-a, axis = 1), np.expand_dims(x, axis = 0))
-        db0 += yy -a
+#     for x, y in zip(x_train, y_train):
+#         yy = tf.one_hot(y, depth=num_classes).numpy()
+#         a= logistic_regression_multi(x, b, b0)
+#         db += np.matmul(np.expand_dims(yy-a, axis = 1), np.expand_dims(x, axis = 0))
+#         db0 += yy -a
     
-    b += learning_rate * db
-    b0 += learning_rate * db0
+#     b += learning_rate * db
+#     b0 += learning_rate * db0
     
-pred = np.argmax(np.array([logistic_regression_multi(x, b, b0) for x in x_test]), axis=1)
-print("Accuracy: ", np.mean(pred == y_test))
+# pred = np.argmax(np.array([logistic_regression_multi(x, b, b0) for x in x_test]), axis=1)
+# print("Accuracy: ", np.mean(pred == y_test))
 
-# TensorFlow 텐서로 변환(tensorflow-io-gcs-filesystem 0.31.0)
-x_train_tensor = tf.convert_to_tensor(x_train)
-y_train_tensor = tf.convert_to_tensor(y_train, dtype=tf.int32)
-x_test_tensor = tf.convert_to_tensor(x_test)
-y_test_tensor = tf.convert_to_tensor(y_test, dtype=tf.int32)
+# # TensorFlow 텐서로 변환(tensorflow-io-gcs-filesystem 0.31.0)
+# x_train_tensor = tf.convert_to_tensor(x_train)
+# y_train_tensor = tf.convert_to_tensor(y_train, dtype=tf.int32)
+# x_test_tensor = tf.convert_to_tensor(x_test)
+# y_test_tensor = tf.convert_to_tensor(y_test, dtype=tf.int32)
 
-# 경사 하강법 학습
-for step in range(training_step):
-    # 배치 처리
-    for start in range(0, x_train.shape[0], batch_size):
-        end = min(start + batch_size, x_train.shape[0])
-        x_batch = x_train_tensor[start:end]
-        y_batch = y_train_tensor[start:end]
+# # 경사 하강법 학습
+# for step in range(training_step):
+#     # 배치 처리
+#     for start in range(0, x_train.shape[0], batch_size):
+#         end = min(start + batch_size, x_train.shape[0])
+#         x_batch = x_train_tensor[start:end]
+#         y_batch = y_train_tensor[start:end]
 
-        # 원핫 인코딩
-        yy = tf.one_hot(y_batch, depth=num_classes)
+#         # 원핫 인코딩
+#         yy = tf.one_hot(y_batch, depth=num_classes)
 
-        # 예측값 계산
-        a = logistic_regression_multi(x_batch, b, b0)
+#         # 예측값 계산
+#         a = logistic_regression_multi(x_batch, b, b0)
 
-        # 기울기 계산
-        db = tf.matmul(tf.transpose(yy - a), x_batch)
-        db0 = tf.reduce_sum(yy - a, axis=0)
+#         # 기울기 계산
+#         db = tf.matmul(tf.transpose(yy - a), x_batch)
+#         db0 = tf.reduce_sum(yy - a, axis=0)
 
-        # 파라미터 업데이트
-        b += learning_rate * db
-        b0 += learning_rate * db0
+#         # 파라미터 업데이트
+#         b += learning_rate * db
+#         b0 += learning_rate * db0
 
-    # 결과 출력 (Optional)
-    if step % display_step == 0:
-        pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
-        accuracy = np.mean(pred == y_test)
-        print(f"Step {step}, Accuracy: {accuracy:.4f}")
+#     # 결과 출력 (Optional)
+#     if step % display_step == 0:
+#         pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
+#         accuracy = np.mean(pred == y_test)
+#         print(f"Step {step}, Accuracy: {accuracy:.4f}")
 
-# 최종 정확도 계산
-pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
-accuracy = np.mean(pred == y_test)
-print("Final Accuracy: ", accuracy)
+# # 최종 정확도 계산
+# pred = np.argmax(logistic_regression_multi(x_test, b, b0).numpy(), axis=1)
+# accuracy = np.mean(pred == y_test)
+# print("Final Accuracy: ", accuracy)
