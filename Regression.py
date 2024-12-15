@@ -57,16 +57,23 @@ for step in range(training_step):
 
 pred = logistic_regression_wo_vectorization(x_test, b, b0) ## 반올림 했을때 1인지 0인지 구분
 print("Accuracy : ", accuracy(pred, y_test))
-exit()
+
 # 6-1
 
 # (2) : 벡터 변경
 for step in range(training_step):
     a = logistic_regression(x_train, b, b0)
     
-    # 벡터화된 업데이트 
-    db = np.dot(x_train.T, (y_train - a))  # (num_feature,)
-    db0 = np.sum(y_train - a)  # 스칼라
+    # # 벡터화된 업데이트 
+    # db = np.dot(x_train.T, (y_train - a))  # (num_feature,)
+    # db0 = np.sum(y_train - a)  # 스칼라
+    
+    # 벡터화된 업데이트
+    error = y_train - a  # (num_train_samples, )
+    db = np.dot(x_train.T, error)  # (num_feature,)
+    db0 = np.sum(error)  # 스칼라
+    
+    
     
     b += learning_rate * db
     b0 += learning_rate * db0
