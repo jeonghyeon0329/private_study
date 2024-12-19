@@ -1,0 +1,6 @@
+# Ignore the 'results' directory (including everything inside it)
+results/
+
+# Ignore model files
+*.pt
+*.bin

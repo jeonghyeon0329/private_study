@@ -23,9 +23,15 @@ dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='t
 # 3. 토크나이저 로딩 (GPT-2용 토크나이저)
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
+# pad_token 설정 (GPT-2는 기본적으로 pad_token이 없으므로 eos_token을 pad_token으로 설정)
+tokenizer.pad_token = tokenizer.eos_token
+
 # 4. 텍스트 데이터를 토큰화
 def tokenize_function(examples):
-    return tokenizer(examples['text'], padding="max_length", truncation=True, max_length=32)
+    # 토큰화된 입력을 반환하고, labels은 input_ids와 동일하게 설정
+    output = tokenizer(examples['text'], padding="max_length", truncation=True, max_length=32)
+    output["labels"] = output["input_ids"]  # labels는 input_ids와 동일하게 설정
+    return output
 
 tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
