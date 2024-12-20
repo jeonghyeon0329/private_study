@@ -23,7 +23,7 @@ while True:
         print("Bot: Goodbye!")
         break
 
-    # 사용자 입력을 대화 히스토리에 추가 (봇의 이전 응답은 다시 추가하지 않음)
+    # 사용자 입력만 대화 히스토리에 추가 (봇의 이전 응답은 다시 추가하지 않음)
     conversation_history += f" {user_input}"
 
     # 모델 응답 생성
