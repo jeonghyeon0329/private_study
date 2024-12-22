@@ -2,6 +2,13 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArgume
 from datasets import load_dataset
 import torch
 
+# 4. 텍스트 데이터를 토큰화
+def tokenize_function(examples):
+    # 토큰화된 입력을 반환하고, labels은 input_ids와 동일하게 설정
+    output = tokenizer(examples['text'], padding="max_length", truncation=True, max_length=32)
+    output["labels"] = output["input_ids"]  # labels는 input_ids와 동일하게 설정
+    return output
+
 # 1. 데이터 준비 (예시 데이터)
 data = [
     "Hello, how are you?",
@@ -18,7 +25,9 @@ with open('sample_data.txt', 'w') as f:
         f.write(line + '\n')
 
 # 2. 데이터셋 로딩
-dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='train')
+# dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='train') : 모든 데이터를 한꺼번에 로딩
+dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='train', streaming=True)
+
 
 # 3. 토크나이저 로딩 (GPT-2용 토크나이저)
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
@@ -26,26 +35,31 @@ tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 # pad_token 설정 (GPT-2는 기본적으로 pad_token이 없으므로 eos_token을 pad_token으로 설정)
 tokenizer.pad_token = tokenizer.eos_token
 
-# 4. 텍스트 데이터를 토큰화
-def tokenize_function(examples):
-    # 토큰화된 입력을 반환하고, labels은 input_ids와 동일하게 설정
-    output = tokenizer(examples['text'], padding="max_length", truncation=True, max_length=32)
-    output["labels"] = output["input_ids"]  # labels는 input_ids와 동일하게 설정
-    return output
-
 tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
 # 5. GPT-2 모델 로딩
 model = GPT2LMHeadModel.from_pretrained('gpt2')
 
 # 6. 훈련 인자 설정
+# training_args = TrainingArguments(
+#     output_dir='./results',          # 모델 체크포인트 저장 경로
+#     num_train_epochs=3,              # 훈련 에폭 수
+#     per_device_train_batch_size=2,   # 배치 크기
+#     save_steps=10_000,               # 체크포인트 저장 간격
+#     save_total_limit=2,              # 저장할 체크포인트의 개수 제한
+# )
+
 training_args = TrainingArguments(
-    output_dir='./results',          # 모델 체크포인트 저장 경로
-    num_train_epochs=3,              # 훈련 에폭 수
-    per_device_train_batch_size=2,   # 배치 크기
-    save_steps=10_000,               # 체크포인트 저장 간격
-    save_total_limit=2,              # 저장할 체크포인트의 개수 제한
+    output_dir='./results',          
+    num_train_epochs=3,              
+    per_device_train_batch_size=2,   
+    save_steps=10_000,               
+    save_total_limit=2,             
+    logging_steps=100,  # 로깅 빈도를 적절하게 설정
+    evaluation_strategy="epoch"  # 훈련 중 평가 전략 설정
 )
+
+
 
 # 7. Trainer 인스턴스 생성
 trainer = Trainer(
