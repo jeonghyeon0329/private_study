@@ -9,25 +9,26 @@ def tokenize_function(examples):
     output["labels"] = output["input_ids"]  # labels는 input_ids와 동일하게 설정
     return output
 
-# 1. 데이터 준비 (예시 데이터)
-data = [
-    "Hello, how are you?",
-    "I am good, thank you!",
-    "What is your name?",
-    "I am a language model.",
-    "How can I help you today?",
-    "I am here to answer your questions."
-]
+# # 1. 데이터 준비 (예시 데이터)
+# data = [
+#     "Hello, how are you?",
+#     "I am good, thank you!",
+#     "What is your name?",
+#     "I am a language model.",
+#     "How can I help you today?",
+#     "I am here to answer your questions."
+# ]
 
-# 데이터를 파일로 저장
-with open('sample_data.txt', 'w') as f:
-    for line in data:
-        f.write(line + '\n')
+# # 데이터를 파일로 저장
+# with open('sample_data.txt', 'w') as f:
+#     for line in data:
+#         f.write(line + '\n')
 
-# 2. 데이터셋 로딩
-# dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='train') : 모든 데이터를 한꺼번에 로딩
-dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='train', streaming=True)
+# # 2. 데이터셋 로딩
+# dataset = load_dataset('text', data_files={'train': 'sample_data.txt'}, split='train', streaming=True)
 
+# 2. 기본 데이터셋 활용
+dataset = load_dataset('daily_dialog')
 
 # 3. 토크나이저 로딩 (GPT-2용 토크나이저)
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
