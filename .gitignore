@@ -4,3 +4,7 @@ results/
 # Ignore model files
 *.pt
 *.bin
+
+test_venv
+*.csv
+*.xlsx
